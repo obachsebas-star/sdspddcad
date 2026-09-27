@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>S.D.S.P.D.D.C.A.D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root{
+    --ink:#1e1b3a; --muted:#5d5a7a; --paper:#ffffff; --line:#1e1b3a;
+    --cherry:#ef4a57; --grape:#6a4bd8; --lemon:#ffc93c; --mint:#27b386; --sky:#3f8cff; --tangerine:#ff8a3d;
+    --cherry-t:#ffe1e4; --grape-t:#ece6ff; --lemon-t:#fff2c9; --mint-t:#d8f5ea; --sky-t:#dfeaff;
+    --bg:var(--lemon-t);
+    --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+    --body:"Nunito",system-ui,-apple-system,sans-serif;
+    --shadow:4px 4px 0 var(--ink);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;overflow:hidden;transition:background .5s}
+  h1,h2,h3{font-family:var(--display);margin:0;line-height:1.02;text-wrap:balance}
+  h2{font-size:clamp(2rem,5.5vw,3.2rem);font-weight:800}
+  h3{font-size:1.2rem;font-weight:800}
+  p{margin:0}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:3px solid var(--grape);outline-offset:3px}
+
+  .deck{position:relative;height:100%;display:flex;flex-direction:column}
+  .progress{height:8px;flex:none;background:#ffffff88}
+  .progress i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,var(--cherry) 0 10px,var(--paper) 10px 20px);transition:width .4s;border-right:2px solid var(--ink)}
+  .slides{flex:1;position:relative;overflow:hidden}
+  .slide{position:absolute;inset:0;overflow-y:auto;padding-inline:16px;padding-block:28px 40px;opacity:0;visibility:hidden;transform:translateY(24px) scale(.98);transition:opacity .4s,transform .45s cubic-bezier(.2,.9,.3,1.2),visibility .4s}
+  .slide.on{opacity:1;visibility:visible;transform:none}
+  .in{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:22px;min-height:100%;justify-content:center;position:relative}
+  .kicker{display:inline-block;align-self:flex-start;font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:.76rem;background:var(--ink);color:var(--paper);padding:4px 10px;border-radius:6px;transform:rotate(-1.5deg)}
+  .lede{color:var(--muted);font-size:1.12rem;max-width:58ch}
+  .hint{color:var(--muted);font-size:.92rem}
+
+  .card{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{border:2px solid var(--ink);border-radius:14px;padding:12px 20px;font-weight:800;background:var(--ink);color:var(--paper);box-shadow:3px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+  .btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+  .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+  .btn.light{background:var(--paper);color:var(--ink)}
+  .btn.mint{background:var(--mint)} .btn.cherry{background:var(--cherry)} .btn.lemon{background:var(--lemon);color:var(--ink)}
+  .chip{border:2px solid var(--ink);background:var(--paper);border-radius:99px;padding:8px 14px;font-weight:800;transition:transform .12s}
+  .chip[aria-pressed="true"]{background:var(--mint);color:#fff}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .big{font-family:var(--display);font-size:2.2rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+  .ok{color:#138a63;font-weight:800} .warn{color:var(--cherry);font-weight:800}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:.82rem;font-weight:800;color:var(--muted)}
+  .field input{border:2px solid var(--ink);border-radius:12px;padding:10px 12px;background:var(--paper);width:100%}
+
+  /* floating candies */
+  .floaty{position:absolute;pointer-events:none;animation:bob 5s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-12px) rotate(8deg)}}
+  .wrap-candy{width:64px;height:34px;border-radius:17px;border:2px solid var(--ink);position:relative}
+  .wrap-candy::before,.wrap-candy::after{content:"";position:absolute;top:50%;width:22px;height:26px;margin-top:-13px;border:2px solid var(--ink);background:inherit}
+  .wrap-candy::before{left:-20px;clip-path:polygon(0 0,100% 40%,100% 60%,0 100%)}
+  .wrap-candy::after{right:-20px;clip-path:polygon(0 40%,100% 0,100% 100%,0 60%)}
+  .lolli{width:56px;height:56px;border-radius:50%;border:2px solid var(--ink);background:conic-gradient(var(--cherry) 0 25%,var(--paper) 0 50%,var(--cherry) 0 75%,var(--paper) 0)}
+  .lolli::after{content:"";position:absolute;left:25px;top:54px;width:6px;height:46px;background:var(--paper);border:2px solid var(--ink);border-radius:3px}
+
+  /* cover */
+  .acro{display:flex;flex-wrap:wrap;gap:10px}
+  .letter{border:2px solid var(--ink);border-radius:16px;padding:8px 16px 4px;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,8vw,4.4rem);line-height:1;color:#fff;box-shadow:var(--shadow);transition:transform .2s;display:flex;flex-direction:column;align-items:center}
+  .letter:nth-child(odd){transform:rotate(-3deg)} .letter:nth-child(even){transform:rotate(2deg)}
+  .letter:hover{transform:translateY(-4px) rotate(0)}
+  .letter small{font-family:var(--body);font-size:.78rem;font-weight:800;max-height:0;overflow:hidden;transition:max-height .3s}
+  .letter.open small{max-height:40px;padding-bottom:4px}
+  .l0{background:var(--cherry)}.l1{background:var(--grape)}.l2{background:var(--mint)}.l3{background:var(--sky)}.l4{background:var(--tangerine)}
+  .fullname{font-family:var(--display);font-size:clamp(1.3rem,4vw,2.1rem);font-weight:800;min-height:1.3em}
+
+  /* meet + calendar */
+  .meet{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .avatar{width:100px;height:100px;border-radius:50%;background:var(--lemon);border:2px solid var(--ink);box-shadow:var(--shadow);display:grid;place-items:center;font-family:var(--display);font-size:3.2rem;font-weight:800;flex:none}
+  .facts{display:flex;flex-wrap:wrap;gap:8px}
+  .fact{background:var(--grape-t);border:2px solid var(--ink);padding:4px 12px;border-radius:99px;font-weight:800;font-size:.9rem}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:460px}
+  .cal .dow{font-size:.75rem;font-weight:800;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.06em}
+  .day{aspect-ratio:1;border-radius:12px;border:2px solid transparent;background:transparent;font-weight:800;font-variant-numeric:tabular-nums;display:grid;place-items:center;position:relative;max-width:100%}
+  .day:disabled{color:#b9b6cc;cursor:not-allowed}
+  .day.free{border-color:var(--ink);background:var(--paper)}
+  .day.free:hover{background:var(--mint-t)}
+  .day[aria-pressed="true"]{background:var(--mint);color:#fff;border-color:var(--ink)}
+  .day.special{border-color:var(--cherry);border-style:dashed;color:var(--cherry)}
+  .calwrap{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--muted)}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;border:2px solid var(--ink);margin-right:6px;vertical-align:-1px}
+
+  /* idea */
+  .list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-weight:600}
+  .tag{display:inline-block;font-family:var(--display);font-weight:800;font-size:1.5rem;padding:0 12px;border-radius:10px;border:2px solid var(--ink);margin-bottom:8px}
+
+  /* costumes */
+  .cos{display:flex;flex-direction:column;gap:12px}
+  .cos .img{height:90px;border-radius:12px;border:2px dashed var(--ink);display:grid;place-items:center;font-family:var(--display);font-size:2.2rem;font-weight:800;background:var(--grape-t);color:var(--grape)}
+  .cos .vote{display:flex;gap:8px}
+  .cos .vote button{flex:1;border:2px solid var(--ink);border-radius:10px;padding:8px;font-weight:800;background:var(--paper)}
+  .cos .vote button[aria-pressed="true"].y{background:var(--mint);color:#fff}
+  .cos .vote button[aria-pressed="true"].n{background:var(--cherry);color:#fff}
+  .cos.approved{background:var(--mint-t)} .cos.rejected{background:var(--cherry-t)}
+  .pending{border-style:dashed;box-shadow:none;background:#ffffffaa}
+
+  /* map */
+  .mapgrid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start}
+  .map{padding:0;overflow:hidden}
+  .map svg{display:block;width:100%;height:auto}
+  .stoplist{display:flex;flex-direction:column;gap:8px}
+  .stopbtn{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;text-align:left;border:2px solid var(--ink);border-radius:14px;background:var(--paper);padding:8px 10px;font-weight:800;transition:transform .12s}
+  .stopbtn span.n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;border:2px solid var(--ink);font-size:.9rem}
+  .stopbtn small{display:block;font-weight:600;color:var(--muted)}
+  .stopbtn[aria-pressed="true"]{box-shadow:var(--shadow);transform:translate(-2px,-2px)}
+  .detail{min-height:120px}
+  .svg-stop{cursor:pointer}
+  .svg-stop:hover circle.core{r:12}
+  a.maps{display:inline-block;border:2px solid var(--ink);border-radius:14px;padding:10px 16px;font-weight:800;background:var(--sky);color:#fff;text-decoration:none;box-shadow:3px 3px 0 var(--ink)}
+
+  /* timeline */
+  .timeline{list-style:none;margin:0;padding:0}
+  .tl{display:grid;grid-template-columns:62px 26px 1fr;gap:12px;align-items:start}
+  .tl time{font-weight:800;font-variant-numeric:tabular-nums;text-align:right;padding-top:3px}
+  .tl .rail{display:flex;flex-direction:column;align-items:center;height:100%}
+  .tl .rail b{width:18px;height:18px;border-radius:50%;margin-top:4px;flex:none;border:2px solid var(--ink)}
+  .tl .rail span{flex:1;width:3px;background:var(--ink);opacity:.25;min-height:22px}
+  .tl p{padding-bottom:14px;font-weight:700}
+  .tl p small{display:block;color:var(--muted);font-weight:600}
+  input[type=range]{accent-color:var(--cherry);width:min(340px,100%)}
+
+  /* safety */
+  .meter{height:26px;border-radius:99px;background:var(--paper);border:2px solid var(--ink);overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+  .meter i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,var(--mint) 0 12px,#4fcca1 12px 24px);transition:width .45s cubic-bezier(.2,.9,.3,1.2)}
+  .safe{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .safe button{border:2px solid var(--ink);background:var(--paper);border-radius:14px;padding:14px;text-align:left;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;transition:transform .12s,box-shadow .12s}
+  .safe button b{width:28px;height:28px;border-radius:8px;border:2px solid var(--ink);display:grid;place-items:center}
+  .safe button[aria-pressed="true"]{background:var(--mint-t);box-shadow:3px 3px 0 var(--ink)}
+  .safe button[aria-pressed="true"] b{background:var(--mint);color:#fff}
+  .safe strong{display:block} .safe span{color:var(--muted);font-size:.9rem}
+
+  .candies{display:flex;flex-wrap:wrap;gap:14px 20px;min-height:40px;padding-left:10px}
+  .mini{width:30px;height:18px;border-radius:9px;border:2px solid var(--ink);position:relative}
+  .mini::before,.mini::after{content:"";position:absolute;top:50%;width:10px;height:14px;margin-top:-7px;background:inherit;border:2px solid var(--ink)}
+  .mini::before{left:-10px;clip-path:polygon(0 0,100% 40%,100% 60%,0 100%)}
+  .mini::after{right:-10px;clip-path:polygon(0 40%,100% 0,100% 100%,0 60%)}
+
+  .answer{display:flex;flex-wrap:wrap;gap:14px}
+  .answer .btn{font-size:1.15rem;padding:16px 24px}
+  .qbox{display:flex;gap:8px;flex-wrap:wrap}
+  .qbox input{flex:1;min-width:200px;border:2px solid var(--ink);border-radius:12px;padding:10px 12px;background:var(--paper)}
+
+  nav.bar{flex:none;display:flex;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--ink)}
+  .navbtn{border:2px solid var(--ink);border-radius:999px;width:46px;height:46px;background:var(--lemon);font-size:1.2rem;font-weight:800;flex:none;box-shadow:2px 2px 0 var(--ink)}
+  .navbtn:disabled{opacity:.3;cursor:default;box-shadow:none}
+  .dots{flex:1;display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+  .dot{width:12px;height:12px;border-radius:99px;border:2px solid var(--ink);background:var(--paper);padding:0;transition:width .3s}
+  .dot.on{background:var(--cherry);width:30px}
+  .count{font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+  canvas#confetti{position:fixed;inset:0;pointer-events:none;width:100%;height:100%}
+
+  @media (max-width:760px){
+    .mapgrid,.calwrap{grid-template-columns:1fr}
+    .floaty{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slide,.letter,.meter i,.floaty,body{transition:none;animation:none}
+  }
+</style></head><body>
+
+<div class="deck">
+  <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+  <main class="slides" id="slides">
+
+    <!-- 1 Portada -->
+    <section class="slide" data-bg="var(--lemon-t)" aria-label="Portada">
+      <div class="in">
+        <div class="floaty" style="right:4%;top:6%"><div class="wrap-candy" style="background:var(--grape)"></div></div>
+        <div class="floaty" style="right:14%;top:58%;animation-delay:-2s"><div class="lolli"></div></div>
+        <div class="floaty" style="right:2%;top:40%;animation-delay:-1s"><div class="wrap-candy" style="background:var(--mint)"></div></div>
+        <span class="kicker">Una propuesta de Sebastián · sábado 31 de octubre</span>
+        <div class="acro" id="acro"></div>
+        <p class="fullname" id="fullname" aria-live="polite">Toquen cada letra para descubrir el nombre</p>
+        <p class="lede">Una salida corta y cuidada para pedir dulces con disfraces alegres, por mi barrio en La Reina, con horario claro y todo acordado con ustedes.</p>
+        <div class="row">
+          <button class="btn light" id="revealAll" type="button">Revelar el nombre</button>
+          <button class="btn cherry" type="button" data-go="1">Empezar →</button>
+        </div>
+        <p class="hint">Pasen de diapositiva con las flechas de abajo, del teclado o deslizando el dedo.</p>
+      </div>
+    </section>
+
+    <!-- 2 Conocerme -->
+    <section class="slide" data-bg="var(--grape-t)" aria-label="Conocerme">
+      <div class="in">
+        <span class="kicker">Primero lo primero</span>
+        <h2>Hola, soy Sebastián</h2>
+        <div class="card meet">
+          <div class="avatar" aria-hidden="true">S</div>
+          <div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:220px">
+            <p class="lede" style="color:var(--ink)">Soy amigo de su hija. Sé que todavía no me conocen, así que me gustaría pasar a saludarlos en persona antes de Halloween.</p>
+            <div class="facts"><span class="fact">Vivo en La Reina</span><span class="fact">Estudio</span><span class="fact">Juego básquetbol</span></div>
+          </div>
+        </div>
+        <div class="card calwrap">
+          <div>
+            <h3 style="margin-bottom:10px">Octubre 2026</h3>
+            <div class="cal" id="cal"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <h3>¿Qué día les acomoda que pase a saludarlos?</h3>
+            <p class="hint">Entre semana tengo clases y entrenamiento, por eso propongo los fines de semana antes de Halloween.</p>
+            <div class="field"><label>Horario</label><div class="chips" id="slot"></div></div>
+            <p id="dayText" aria-live="polite" style="font-weight:700">Elijan uno o más días.</p>
+            <div class="legend"><span><i style="background:var(--paper)"></i>Disponible</span><span><i style="background:var(--mint)"></i>Elegido</span><span><i style="border-color:var(--cherry);border-style:dashed"></i>Halloween</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 Idea -->
+    <section class="slide" data-bg="var(--mint-t)" aria-label="La idea">
+      <div class="in">
+        <span class="kicker">Qué es y qué no es</span>
+        <h2>Una fiesta de dulces, sin nada de terror</h2>
+        <div class="grid2">
+          <div class="card"><span class="tag" style="background:var(--mint);color:#fff">Sí</span>
+            <ul class="list"><li>Disfraces alegres que ustedes aprueben</li><li>Pedir dulces en casas de mi barrio</li><li>Un descanso en la plaza</li><li>Volver temprano y a la hora acordada</li></ul></div>
+          <div class="card"><span class="tag" style="background:var(--cherry);color:#fff">No</span>
+            <ul class="list"><li>Nada de terror, sangre ni cosas oscuras</li><li>Fiestas ni lugares desconocidos</li><li>Bromas ni asustar a nadie</li><li>Salir del recorrido acordado</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 Disfraces -->
+    <section class="slide" data-bg="var(--cherry-t)" aria-label="Disfraces">
+      <div class="in">
+        <span class="kicker">Ustedes deciden</span>
+        <h2>Los disfraces que a ella le gustan</h2>
+        <p class="lede">Estas son las opciones que eligió ella. Marquen cuáles les parecen bien.</p>
+        <div class="grid4" id="costumes"></div>
+        <p id="cosSum" style="font-weight:800" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- 5 Ruta -->
+    <section class="slide" data-bg="var(--sky-t)" aria-label="La ruta">
+      <div class="in">
+        <span class="kicker">El recorrido</span>
+        <h2>La ruta segura (y con muchos dulces)</h2>
+        <div class="mapgrid">
+          <div class="card map" id="map"></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="stoplist" id="stoplist"></div>
+          </div>
+        </div>
+        <div class="card detail" id="detail" aria-live="polite"></div>
+        <div class="row"><a class="maps" id="mapsLink" href="#" target="_blank" rel="noopener">Abrir la ruta caminando en Google Maps</a><span class="hint" id="routeSum"></span></div>
+      </div>
+    </section>
+
+    <!-- 6 Horario -->
+    <section class="slide" data-bg="var(--lemon-t)" aria-label="Horario">
+      <div class="in">
+        <span class="kicker">El horario</span>
+        <h2>A qué hora salimos y volvemos</h2>
+        <div class="grid2">
+          <div class="card" style="display:flex;flex-direction:column;gap:14px">
+            <label for="start"><strong>Hora de salida desde mi casa</strong></label>
+            <input type="range" id="start" min="990" max="1170" step="15" value="1080">
+            <span class="big" id="startOut">18:00</span>
+            <p id="backMsg" aria-live="polite"></p>
+            <h3 style="margin-top:6px">¿Cómo vuelve a su casa?</h3>
+            <div class="chips" id="home"></div>
+          </div>
+          <div class="card"><ol class="timeline" id="timeline"></ol></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 Seguridad -->
+    <section class="slide" data-bg="var(--mint-t)" aria-label="Seguridad">
+      <div class="in">
+        <span class="kicker">Lo más importante</span>
+        <h2>Cómo la voy a cuidar</h2>
+        <div class="row" style="justify-content:space-between"><strong>Nivel de tranquilidad</strong><span class="big" id="calmPct" style="font-size:1.6rem">0%</span></div>
+        <div class="meter" aria-hidden="true"><i id="calm"></i></div>
+        <div class="safe" id="safe"></div>
+        <p class="hint">Toquen cada medida para sumarla al plan.</p>
+      </div>
+    </section>
+
+    <!-- 8 Reglas -->
+    <section class="slide" data-bg="var(--grape-t)" aria-label="Reglas">
+      <div class="in">
+        <span class="kicker">Reglas de la noche</span>
+        <h2>Lo que ustedes decidan, se cumple</h2>
+        <div class="grid2">
+          <div class="card" style="display:flex;flex-direction:column;gap:12px">
+            <h3>Límite de dulces para comer esa noche</h3>
+            <p class="hint">Lo de "camino a la diabetes" es chiste: ustedes ponen el máximo y el resto se guarda.</p>
+            <input type="range" id="candyMax" min="1" max="15" value="5" aria-label="Máximo de dulces">
+            <p><span class="big" id="candyOut">5</span> <strong>dulces máximo</strong></p>
+            <div class="candies" id="candies" aria-hidden="true"></div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;gap:12px">
+            <h3>Les escribo para avisarles cada</h3>
+            <div class="chips" id="checkin"></div>
+            <div class="field"><label for="phone">Mi número</label><input id="phone" type="text" placeholder="+56 9 ..."></div>
+            <div class="field"><label for="meet">Si nos separamos, nos juntamos en</label><input id="meet" type="text" value="Mi casa"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 Plan B -->
+    <section class="slide" data-bg="var(--sky-t)" aria-label="Otras opciones">
+      <div class="in">
+        <span class="kicker">Si prefieren otra cosa</span>
+        <h2>También estamos bien con esto</h2>
+        <div class="grid4">
+          <div class="card"><h3>Que nos acompañen</h3><p class="hint">Vienen con nosotros al recorrido y me conocen de paso.</p></div>
+          <div class="card"><h3>Dulces en casa</h3><p class="hint">Disfraces, juegos y una película apta para todos en una de las casas.</p></div>
+          <div class="card"><h3>Versión corta</h3><p class="hint">Solo una hora por mi cuadra y antes de que oscurezca.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 Respuesta -->
+    <section class="slide" data-bg="var(--lemon-t)" aria-label="Respuesta">
+      <div class="in">
+        <div class="floaty" style="right:6%;top:10%"><div class="lolli"></div></div>
+        <span class="kicker">La gran pregunta</span>
+        <h2 style="font-size:clamp(2.6rem,8vw,4.6rem)">¿Nos dan permiso?</h2>
+        <p class="lede">Cualquier respuesta está bien. Lo importante es que estén tranquilos.</p>
+        <div class="answer">
+          <button class="btn mint" type="button" data-ans="si">Sí, con este plan</button>
+          <button class="btn lemon" type="button" data-ans="preguntas">Tenemos preguntas</button>
+          <button class="btn light" type="button" data-ans="no">Esta vez no</button>
+        </div>
+        <div class="card" id="reply" hidden></div>
+      </div>
+    </section>
+
+  </main>
+  <nav class="bar" aria-label="Navegación">
+    <button class="navbtn" id="prev" type="button" aria-label="Anterior">←</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="navbtn" id="next" type="button" aria-label="Siguiente">→</button>
+  </nav>
+</div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+/* ============ Disfraces: reemplazar por los que ella elija ============ */
+const COSTUMES = [
+  // { nombre: 'Nombre del disfraz', detalle: 'Descripción corta' },
+];
+/* ===================================================================== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[<&>"]/g, c => ({'<':'&lt;','&':'&amp;','>':'&gt;','"':'&quot;'}[c]));
+  const store = {
+    get(k,d){ try{ const v = JSON.parse(localStorage.getItem('sds3-'+k)); return v === null ? d : v; }catch(e){ return d; } },
+    set(k,v){ try{ localStorage.setItem('sds3-'+k, JSON.stringify(v)); }catch(e){} }
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = m => String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+
+  /* ---------- Navigation ---------- */
+  const slides = [...document.querySelectorAll('.slide')];
+  let cur = 0;
+  slides.forEach((s,i) => {
+    const d = document.createElement('button'); d.className='dot'; d.type='button';
+    d.setAttribute('aria-label','Ir a la diapositiva '+(i+1)); d.onclick = () => go(i); $('dots').appendChild(d);
+  });
+  function go(i){
+    i = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach((s,k) => { s.classList.toggle('on', k===i); s.setAttribute('aria-hidden', k!==i); });
+    [...$('dots').children].forEach((d,k) => d.classList.toggle('on', k===i));
+    $('prev').disabled = i===0; $('next').disabled = i===slides.length-1;
+    $('count').textContent = (i+1)+'/'+slides.length;
+    $('prog').style.width = ((i+1)/slides.length*100)+'%';
+    document.body.style.background = slides[i].dataset.bg;
+    cur = i; slides[i].scrollTop = 0;
+    try{ history.replaceState(null,'','#s'+(i+1)); }catch(e){}
+  }
+  $('prev').onclick = () => go(cur-1);
+  $('next').onclick = () => go(cur+1);
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
+  document.addEventListener('keydown', e => {
+    if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+    if (e.key==='ArrowRight'||e.key==='PageDown') go(cur+1);
+    if (e.key==='ArrowLeft'||e.key==='PageUp') go(cur-1);
+  });
+  let tx=null, ty=null;
+  $('slides').addEventListener('touchstart', e => { tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
+  $('slides').addEventListener('touchend', e => {
+    if (tx===null) return;
+    const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+    if (Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5 && !/INPUT/.test(e.target.tagName)) go(cur+(dx<0?1:-1));
+    tx=null;
+  });
+
+  /* ---------- Cover ---------- */
+  const words = ['Super','Duper','Salida','Por','Dulces','De','Camino','Al','Diabetes'];
+  const opened = new Set();
+  words.forEach((w,i) => {
+    const b = document.createElement('button'); b.type='button'; b.className='letter l'+(i%5);
+    b.innerHTML = w[0]+'<small>'+w+'</small>'; b.setAttribute('aria-label','Letra '+w[0]);
+    b.onclick = () => { b.classList.add('open'); opened.add(i); updateName(); };
+    $('acro').appendChild(b);
+  });
+  let named=false;
+  function updateName(){
+    if (opened.size===words.length){ $('fullname').textContent = words.join(' '); if(!named){named=true; celebrate(70);} }
+    else $('fullname').textContent = words.map((w,i)=>opened.has(i)?w:'___').join(' ');
+  }
+  $('revealAll').onclick = () => document.querySelectorAll('.letter').forEach((b,i) => setTimeout(() => { b.classList.add('open'); opened.add(i); updateName(); }, reduce?0:i*90));
+
+  /* ---------- Calendar (Oct 2026: day 1 is Thursday) ---------- */
+  let picked = store.get('days', []);
+  let slot = store.get('slot', 'Tarde');
+  const dows = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const dowFull = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+  function renderCal(){
+    const c = $('cal'); c.innerHTML = dows.map(d=>'<span class="dow">'+d+'</span>').join('');
+    for (let i=0;i<3;i++) c.insertAdjacentHTML('beforeend','<span></span>');
+    for (let d=1; d<=31; d++){
+      const w = (d+2)%7; // 0=lun
+      const weekend = w>=5, free = weekend && d<31;
+      const b = document.createElement('button'); b.type='button'; b.className='day'+(free?' free':'')+(d===31?' special':'');
+      b.textContent = d; b.disabled = !free;
+      b.setAttribute('aria-label', dowFull[w]+' '+d+' de octubre'+(d===31?', Halloween':'')+(free?'':', no disponible'));
+      if (free){ b.setAttribute('aria-pressed', picked.includes(d)); b.onclick = () => { picked = picked.includes(d) ? picked.filter(x=>x!==d) : [...picked,d].sort((a,b)=>a-b); store.set('days',picked); renderCal(); }; }
+      c.appendChild(b);
+    }
+    const names = picked.map(d => dowFull[(d+2)%7]+' '+d);
+    $('dayText').textContent = picked.length ? 'Pasaría a saludarlos el '+ (names.length>1 ? names.slice(0,-1).join(', ')+' o el '+names.at(-1) : names[0]) +' de octubre, en la '+slot.toLowerCase()+'.' : 'Elijan uno o más días en el calendario.';
+  }
+  function renderSlot(){
+    $('slot').innerHTML='';
+    ['Mañana','Tarde'].forEach(s => { const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=s; b.setAttribute('aria-pressed', s===slot); b.onclick=()=>{slot=s;store.set('slot',s);renderSlot();renderCal();}; $('slot').appendChild(b); });
+  }
+  renderSlot(); renderCal();
+
+  /* ---------- Costumes ---------- */
+  let votes = store.get('votes', {});
+  function renderCostumes(){
+    const box = $('costumes'); box.innerHTML='';
+    if (!COSTUMES.length){
+      for (let i=1;i<=3;i++) box.insertAdjacentHTML('beforeend','<div class="card cos pending"><div class="img">?</div><h3>Opción '+i+'</h3><p class="hint">Disfraz por confirmar</p></div>');
+      $('cosSum').textContent = 'Pronto van a estar aquí las opciones que eligió ella.';
+      return;
+    }
+    COSTUMES.forEach((c,i) => {
+      const v = votes[i];
+      const el = document.createElement('div'); el.className='card cos'+(v==='y'?' approved':v==='n'?' rejected':'');
+      el.innerHTML = '<div class="img">'+esc(c.nombre[0])+'</div><h3>'+esc(c.nombre)+'</h3>'+(c.detalle?'<p class="hint">'+esc(c.detalle)+'</p>':'')+
+        '<div class="vote"><button type="button" class="y" aria-pressed="'+(v==='y')+'">Aprobado</button><button type="button" class="n" aria-pressed="'+(v==='n')+'">Mejor no</button></div>';
+      const [y,n] = el.querySelectorAll('.vote button');
+      y.onclick = () => { votes[i] = v==='y'?undefined:'y'; store.set('votes',votes); renderCostumes(); };
+      n.onclick = () => { votes[i] = v==='n'?undefined:'n'; store.set('votes',votes); renderCostumes(); };
+      box.appendChild(el);
+    });
+    const ok = COSTUMES.filter((c,i)=>votes[i]==='y').map(c=>c.nombre);
+    $('cosSum').textContent = ok.length ? 'Aprobados: '+ok.join(', ')+'.' : 'Todavía no hay disfraces aprobados.';
+  }
+  renderCostumes();
+
+  /* ---------- Map (trazado del barrio, La Reina) ---------- */
+  const C = {cherry:'#ef4a57',grape:'#6a4bd8',mint:'#27b386',sky:'#3f8cff',ink:'#1e1b3a'};
+  const STOPS = [
+    {n:'Mi casa',s:'Punto de encuentro',x:200,y:10,m:0,c:C.grape,d:'Nos juntamos aquí. Revisamos disfraces, celulares cargados y ubicación compartida antes de salir.'},
+    {n:'Veintitrés de Febrero',s:'Dulces',x:292,y:80,m:20,c:C.cherry,d:'Primera calle para pedir dulces. Es una calle residencial y tranquila, cerca de mi casa.'},
+    {n:'Carlos Silva Vildósola',s:'Dulces',x:310,y:139,m:20,c:C.cherry,d:'Seguimos por Carlos Silva Vildósola hacia Ossandón. Tiene muchas casas y poco tráfico.'},
+    {n:'Cruce Príncipe de Gales',s:'Cruce con cuidado',x:262,y:206,m:5,c:C.sky,d:'Es la única avenida grande. La cruzamos en Ossandón, todos juntos y por el paso de peatones.'},
+    {n:'Plaza Ossandón',s:'Descanso',x:262,y:264,m:20,c:C.mint,d:'Descansamos en la plaza de Ossandón con Echeñique: agua, contamos los dulces y les escribo para avisar.'},
+    {n:'Carlos Silva Vildósola poniente',s:'Dulces',x:170,y:112,m:20,c:C.cherry,d:'Volvemos cruzando otra vez Príncipe de Gales por Ossandón y pedimos dulces en el otro tramo de la calle.'},
+    {n:'De vuelta en mi casa',s:'Llegada',x:200,y:10,m:10,c:C.grape,d:'Terminamos donde empezamos. Desde aquí vuelve a su casa como ustedes decidan.'}
+  ];
+  const ROUTE = [[200,10],[200,62],[292,80],[330,87],[330,143],[262,130],[262,206],[262,264],[268,258],[268,206],[268,131],[170,112],[150,108],[150,52],[200,62],[200,10]];
+  const streets = [
+    {p:'M0,24 L440,108',w:9,n:'Veintitrés de Febrero',lx:70,ly:30,r:10.8},
+    {p:'M0,80 L445,165',w:9,n:'Carlos Silva Vildósola',lx:40,ly:80,r:10.8},
+    {p:'M0,168 L491,240',w:16,n:'Príncipe de Gales',lx:20,ly:168,r:8.3,big:1},
+    {p:'M0,262 L180,247 L262,258 L491,300',w:14,n:'Av. Echeñique',lx:60,ly:250,r:-4.7,big:1},
+    {p:'M268,0 L255,307',w:10,n:'Carlos Ossandón',lx:0,ly:0,r:0,v:1},
+    {p:'M425,0 L452,140 L470,200 L480,307',w:12,n:'Padre Hurtado',lx:0,ly:0,r:0,v:2,big:1},
+    {p:'M272,12 L420,16',w:7,n:'Helsby',lx:300,ly:9,r:1.5}
+  ];
+  const minor = [];
+  for (let x=20;x<440;x+=34){ minor.push('M'+x+','+(x*0.19+26)+' L'+(x-2)+','+(x*0.19+78)); minor.push('M'+(x+14)+','+(x*0.19+86)+' L'+(x+12)+','+(x*0.145+168)); }
+  let sel = 0;
+  function drawMap(){
+    let s = '<svg viewBox="0 0 491 307" role="img" aria-label="Mapa del recorrido en La Reina">';
+    s += '<rect width="491" height="307" fill="#f3f1fa"/>';
+    s += '<rect x="0" y="0" width="60" height="14" fill="#cfeedd"/>';
+    minor.forEach(p => s += '<path d="'+p+'" stroke="#e1ddf0" stroke-width="3" fill="none"/>');
+    streets.forEach(st => { s += '<path d="'+st.p+'" stroke="'+(st.big?'#d8d3ea':'#e6e2f3')+'" stroke-width="'+st.w+'" fill="none" stroke-linecap="round"/>'; });
+    s += '<ellipse cx="262" cy="266" rx="30" ry="9" fill="#bfead6" stroke="#27b386" stroke-width="1.5" transform="rotate(8 262 266)"/>';
+    streets.forEach(st => {
+      if (st.v===1) s += '<text x="0" y="0" transform="translate(252,300) rotate(-87)" class="sl">'+st.n+'</text>';
+      else if (st.v===2) s += '<text x="0" y="0" transform="translate(438,12) rotate(79)" class="sl">'+st.n+'</text>';
+      else s += '<text x="0" y="0" transform="translate('+st.lx+','+(st.ly+ (st.big?4:3))+') rotate('+st.r+')" class="sl">'+st.n+'</text>';
+    });
+    s += '<text x="400" y="200" class="sl" style="fill:#3f8cff">Líder</text>';
+    const d = 'M'+ROUTE.map(p=>p.join(',')).join(' L');
+    s += '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path id="rp" d="'+d+'" fill="none" stroke="'+C.cherry+'" stroke-width="3.5" stroke-dasharray="8 6" stroke-linejoin="round" stroke-linecap="round"><animate attributeName="stroke-dashoffset" from="28" to="0" dur="1.2s" repeatCount="indefinite"/></path>';
+    STOPS.forEach((st,i) => {
+      if (i===STOPS.length-1) return; // mismo punto que la casa
+      const on = i===sel || (i===0 && sel===STOPS.length-1);
+      s += '<g class="svg-stop" data-i="'+i+'" tabindex="0" role="button" aria-label="Parada '+(i+1)+': '+st.n+'">'+
+        (on?'<circle cx="'+st.x+'" cy="'+st.y+'" r="17" fill="'+st.c+'" opacity=".25"/>':'')+
+        '<circle class="core" cx="'+st.x+'" cy="'+st.y+'" r="10" fill="'+st.c+'" stroke="'+C.ink+'" stroke-width="2"/>'+
+        '<text x="'+st.x+'" y="'+(st.y+4)+'" text-anchor="middle" style="font:800 11px Nunito,sans-serif;fill:#fff">'+(i===0?'⌂':i+1)+'</text></g>';
+    });
+    s += '<circle r="6" fill="#ffc93c" stroke="'+C.ink+'" stroke-width="2" id="walker"/>';
+    s += '<style>.sl{font:700 9px Nunito,sans-serif;fill:#6f6a8c}</style></head><body></svg>';
+    $('map').innerHTML = s;
+    $('map').querySelectorAll('.svg-stop').forEach(g => {
+      g.onclick = () => pick(+g.dataset.i);
+      g.onkeydown = e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(+g.dataset.i); } };
+    });
+    walk();
+  }
+  let raf;
+  function walk(){
+    cancelAnimationFrame(raf);
+    const p = document.getElementById('rp'), w = document.getElementById('walker'); if(!p||!w) return;
+    const L = p.getTotalLength();
+    if (reduce){ w.setAttribute('cx',200); w.setAttribute('cy',10); return; }
+    const t0 = performance.now();
+    (function step(t){ const q = p.getPointAtLength(((t-t0)/14000%1)*L); w.setAttribute('cx',q.x); w.setAttribute('cy',q.y); raf=requestAnimationFrame(step); })(t0);
+  }
+  function renderList(){
+    const box = $('stoplist'); box.innerHTML='';
+    STOPS.forEach((st,i) => {
+      const b = document.createElement('button'); b.type='button'; b.className='stopbtn'; b.setAttribute('aria-pressed', i===sel);
+      b.innerHTML = '<span class="n" style="background:'+st.c+'">'+(i===0||i===STOPS.length-1?'⌂':i+1)+'</span><span>'+st.n+'<small>'+st.s+(st.m?' · '+st.m+' min':'')+'</small></span>';
+      b.onclick = () => pick(i); box.appendChild(b);
+    });
+  }
+  function pick(i){
+    sel = i; const st = STOPS[i];
+    $('detail').innerHTML = '<div class="row" style="gap:10px;margin-bottom:6px"><span class="kicker" style="background:'+st.c+';transform:none">'+st.s+'</span><h3>'+st.n+'</h3></div><p>'+st.d+'</p>';
+    renderList(); drawMap();
+  }
+  const place = s => encodeURIComponent(s+', La Reina, Santiago, Chile');
+  $('mapsLink').href = 'https://www.google.com/maps/dir/?api=1&origin='+place('Veintitrés de Febrero con Carlos Ossandón')+
+    '&destination='+place('Veintitrés de Febrero con Carlos Ossandón')+
+    '&waypoints='+[place('Carlos Silva Vildósola con Carlos Ossandón'),place('Príncipe de Gales con Carlos Ossandón'),place('Av. Echeñique con Carlos Ossandón'),place('Carlos Silva Vildósola')].join('%7C')+'&travelmode=walking';
+  const total = STOPS.reduce((a,s)=>a+s.m,0);
+  $('routeSum').textContent = '3 calles con dulces · 1 plaza · 1 cruce de avenida · '+total+' min en total';
+  pick(0);
+
+  /* ---------- Timeline ---------- */
+  const homeOpts = ['La pasan a buscar a mi casa','La acompaño hasta su puerta'];
+  let homeSel = store.get('home', homeOpts[1]);
+  $('start').value = store.get('start',1080);
+  function renderTimeline(){
+    const st = +$('start').value; $('startOut').textContent = fmt(st); store.set('start',st);
+    let t = st, html='';
+    STOPS.forEach((s,i) => {
+      t += s.m;
+      html += '<li class="tl"><time>'+fmt(i===0?st:t)+'</time><div class="rail"><b style="background:'+s.c+'"></b>'+(i<STOPS.length-1?'<span></span>':'')+'</div><p>'+s.n+'<small>'+s.s+'</small></p></li>';
+    });
+    const endT = t + (homeSel===homeOpts[1] ? 10 : 0);
+    html += '<li class="tl"><time>'+fmt(endT)+'</time><div class="rail"><b style="background:var(--lemon)"></b></div><p>En su casa<small>'+homeSel+'</small></p></li>';
+    $('timeline').innerHTML = html;
+    $('backMsg').innerHTML = endT <= 21*60+30 ? '<span class="ok">En su casa a las '+fmt(endT)+'.</span>' : '<span class="warn">Llegaría a las '+fmt(endT)+'.</span> Es tarde: mejor salir antes.';
+  }
+  function renderHome(){
+    $('home').innerHTML='';
+    homeOpts.forEach(o => { const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=o; b.setAttribute('aria-pressed',o===homeSel); b.onclick=()=>{homeSel=o;store.set('home',o);renderHome();renderTimeline();}; $('home').appendChild(b); });
+  }
+  $('start').oninput = renderTimeline; renderHome(); renderTimeline();
+
+  /* ---------- Safety ---------- */
+  const safety = [
+    ['En grupo','Nunca solos, siempre juntos'],
+    ['Ubicación compartida','Ustedes la ven en su celular todo el rato'],
+    ['Celular cargado','Con batería al 100% antes de salir'],
+    ['Calles con luz','Solo mi barrio, calles conocidas e iluminadas'],
+    ['Solo en la puerta','No entramos a ninguna casa'],
+    ['Dulces cerrados','Se revisan antes de comerlos'],
+    ['Ropa visible','Algo reflectante o una linterna'],
+    ['Avenida con cuidado','Príncipe de Gales solo por el paso de peatones']
+  ];
+  let safeSel = store.get('safe', []);
+  function renderSafe(){
+    $('safe').innerHTML='';
+    safety.forEach(([t,d],i) => {
+      const on = safeSel.includes(i);
+      const b = document.createElement('button'); b.type='button'; b.setAttribute('aria-pressed',on);
+      b.innerHTML = '<b>'+(on?'✓':'')+'</b><div><strong>'+t+'</strong><span>'+d+'</span></div>';
+      b.onclick = () => { safeSel = on ? safeSel.filter(x=>x!==i) : [...safeSel,i]; store.set('safe',safeSel); renderSafe(); if (safeSel.length===safety.length) celebrate(50); };
+      $('safe').appendChild(b);
+    });
+    const pct = Math.round(safeSel.length/safety.length*100);
+    $('calm').style.width = pct+'%'; $('calmPct').textContent = pct+'%';
+  }
+  renderSafe();
+
+  /* ---------- Rules ---------- */
+  const cols = ['#ef4a57','#6a4bd8','#27b386','#ffc93c','#3f8cff','#ff8a3d'];
+  $('candyMax').value = store.get('candy',5);
+  function renderCandy(){ const n=+$('candyMax').value; $('candyOut').textContent=n; store.set('candy',n); $('candies').innerHTML = Array.from({length:n},(_,i)=>'<span class="mini" style="background:'+cols[i%6]+'"></span>').join(''); }
+  $('candyMax').oninput = renderCandy; renderCandy();
+  const checkOpts = ['15 minutos','30 minutos','Cada parada'];
+  let check = store.get('check','30 minutos');
+  function renderCheck(){ $('checkin').innerHTML=''; checkOpts.forEach(o => { const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=o; b.setAttribute('aria-pressed',o===check); b.onclick=()=>{check=o;store.set('check',o);renderCheck();}; $('checkin').appendChild(b); }); }
+  renderCheck();
+  ['phone','meet'].forEach(id => { const v = store.get(id,null); if (v!==null) $(id).value = v; $(id).oninput = () => store.set(id,$(id).value); });
+
+  /* ---------- Answer ---------- */
+  let qs = store.get('qs', []);
+  document.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
+    const r = $('reply'); r.hidden=false;
+    if (b.dataset.ans==='si'){
+      r.innerHTML = '<h3 class="ok" style="font-size:1.6rem">¡Muchas gracias!</h3><p>Voy a cumplir todo lo acordado: salimos a las '+fmt(+$('start').value)+', les aviso cada '+(check==='Cada parada'?'parada':check)+' y '+homeSel.toLowerCase()+'.</p>';
+      celebrate(180);
+    } else if (b.dataset.ans==='preguntas'){
+      r.innerHTML = '<h3>Anoten sus preguntas</h3><p class="hint" style="margin-bottom:10px">Se las respondo cuando pase a saludarlos.</p><div class="qbox"><input id="qin" type="text" aria-label="Pregunta" placeholder="Escriban una pregunta"><button class="btn" type="button" id="qadd">Agregar</button></div><ul id="qs" style="margin:10px 0 0;padding-left:20px"></ul>';
+      const list = () => $('qs').innerHTML = qs.map(q=>'<li>'+esc(q)+'</li>').join('');
+      const add = () => { const v=$('qin').value.trim(); if(!v) return; qs.push(v); store.set('qs',qs); $('qin').value=''; list(); };
+      list(); $('qadd').onclick = add; $('qin').onkeydown = e => { if (e.key==='Enter') add(); };
+    } else {
+      r.innerHTML = '<h3>Está bien, lo entiendo</h3><p style="margin-bottom:10px">Gracias por escuchar la propuesta. Si quieren, podemos hacer alguna de las otras opciones.</p><button class="btn light" type="button" id="toB">Ver otras opciones</button>';
+      $('toB').onclick = () => go(8);
+    }
+  });
+
+  /* ---------- Candy confetti ---------- */
+  const cv=$('confetti'), cx=cv.getContext('2d'); let parts=[], running=false;
+  function celebrate(n){
+    if (reduce) return;
+    const dpr = devicePixelRatio||1; cv.width=innerWidth*dpr; cv.height=innerHeight*dpr;
+    for (let i=0;i<n;i++) parts.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.4,vx:(Math.random()-.5)*4,vy:2+Math.random()*4,r:Math.random()*6.3,vr:(Math.random()-.5)*.2,c:cols[i%6],s:(6+Math.random()*6)*dpr});
+    if (!running){ running=true; requestAnimationFrame(tick); }
+  }
+  function tick(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=.05; p.r+=p.vr;
+      cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.strokeStyle='#1e1b3a'; cx.lineWidth=1.5;
+      cx.beginPath(); cx.ellipse(0,0,p.s,p.s*.6,0,0,6.3); cx.fill(); cx.stroke();
+      cx.beginPath(); cx.moveTo(-p.s,0); cx.lineTo(-p.s*1.7,-p.s*.6); cx.lineTo(-p.s*1.7,p.s*.6); cx.closePath(); cx.fill(); cx.stroke();
+      cx.beginPath(); cx.moveTo(p.s,0); cx.lineTo(p.s*1.7,-p.s*.6); cx.lineTo(p.s*1.7,p.s*.6); cx.closePath(); cx.fill(); cx.stroke();
+      cx.restore(); });
+    parts = parts.filter(p => p.y < cv.height+40);
+    if (parts.length) requestAnimationFrame(tick); else { running=false; cx.clearRect(0,0,cv.width,cv.height); }
+  }
+
+  const h = /^#s(\d+)$/.exec(location.hash);
+  go(h ? +h[1]-1 : 0);
+})();
+</script>
+
+</body></html>
