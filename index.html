@@ -339,6 +339,16 @@
           <button class="btn light" type="button" data-ans="no">Esta vez no</button>
         </div>
         <div class="card" id="reply" hidden></div>
+        <div class="card" style="display:flex;flex-direction:column;gap:12px">
+          <h3>Mándenme el resumen</h3>
+          <p class="hint">Lo que eligieron en la presentación queda guardado solo en este celular. Cópienlo y mándenmelo por WhatsApp para que yo lo tenga anotado.</p>
+          <pre id="summary" style="margin:0;white-space:pre-wrap;font:600 .92rem/1.5 var(--body);background:var(--lemon-t);border:2px dashed var(--ink);border-radius:12px;padding:12px;max-height:240px;overflow:auto"></pre>
+          <div class="row">
+            <button class="btn" type="button" id="copySum">Copiar resumen</button>
+            <a class="maps" id="waSum" href="https://wa.me/" target="_blank" rel="noopener" style="background:var(--mint)">Enviar por WhatsApp</a>
+            <span id="copyMsg" class="ok" hidden>Copiado</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -617,7 +627,39 @@ const COSTUMES = [
 
   /* ---------- Answer ---------- */
   let qs = store.get('qs', []);
+  let answer = store.get('answer', '');
+  const ansText = {si:'Sí, con este plan', preguntas:'Tenemos preguntas', no:'Esta vez no'};
+  function buildSummary(){
+    const names = picked.map(d => dowFull[(d+2)%7]+' '+d);
+    const okCos = COSTUMES.filter((c,i)=>votes[i]==='y').map(c=>c.nombre);
+    const noCos = COSTUMES.filter((c,i)=>votes[i]==='n').map(c=>c.nombre);
+    const L = [];
+    L.push('Resumen S.D.S.P.D.D.C.A.D');
+    L.push('Respuesta: ' + (answer ? ansText[answer] : 'todavía no responden'));
+    L.push('Día para conocer a Sebastián: ' + (names.length ? names.join(', ') + ' de octubre, en la ' + slot.toLowerCase() : 'sin elegir'));
+    L.push('Salida desde la casa de Sebastián: ' + fmt(+$('start').value));
+    L.push('Vuelta a su casa: ' + homeSel);
+    if (COSTUMES.length){ L.push('Disfraces aprobados: ' + (okCos.join(', ') || 'ninguno todavía')); if (noCos.length) L.push('Disfraces rechazados: ' + noCos.join(', ')); }
+    L.push('Límite de dulces esa noche: ' + $('candyMax').value);
+    L.push('Aviso cada: ' + check);
+    L.push('Punto de encuentro si se separan: ' + ($('meet').value.trim() || 'sin definir'));
+    L.push('Medidas de seguridad marcadas: ' + (safeSel.length ? safeSel.slice().sort((a,b)=>a-b).map(i=>safety[i][0]).join(', ') : 'ninguna'));
+    if (qs.length){ L.push('Preguntas:'); qs.forEach(q => L.push('- ' + q)); }
+    const t = L.join('\n');
+    $('summary').textContent = t;
+    $('waSum').href = 'https://wa.me/?text=' + encodeURIComponent(t);
+    return t;
+  }
+  document.addEventListener('click', () => setTimeout(buildSummary, 0));
+  document.addEventListener('input', () => setTimeout(buildSummary, 0));
+  $('copySum').onclick = () => {
+    const t = buildSummary();
+    const done = () => { $('copyMsg').textContent = 'Copiado'; $('copyMsg').hidden = false; setTimeout(()=>$('copyMsg').hidden = true, 2000); };
+    const fallback = () => { const r=document.createRange(); r.selectNodeContents($('summary')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $('copyMsg').textContent='Seleccionado: cópienlo manteniendo presionado'; $('copyMsg').hidden=false; };
+    try { navigator.clipboard.writeText(t).then(done, fallback); } catch(e){ fallback(); }
+  };
   document.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
+    answer = b.dataset.ans; store.set('answer', answer);
     const r = $('reply'); r.hidden=false;
     if (b.dataset.ans==='si'){
       r.innerHTML = '<h3 class="ok" style="font-size:1.6rem">¡Muchas gracias!</h3><p>Voy a cumplir todo lo acordado: salimos a las '+fmt(+$('start').value)+', les aviso cada '+(check==='Cada parada'?'parada':check)+' y '+homeSel.toLowerCase()+'.</p>';
@@ -653,6 +695,8 @@ const COSTUMES = [
     if (parts.length) requestAnimationFrame(tick); else { running=false; cx.clearRect(0,0,cv.width,cv.height); }
   }
 
+  document.addEventListener('keyup', () => setTimeout(buildSummary, 0));
+  buildSummary();
   const h = /^#s(\d+)$/.exec(location.hash);
   go(h ? +h[1]-1 : 0);
 })();
