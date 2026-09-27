@@ -559,8 +559,8 @@ const COSTUMES = [
     renderList(); drawMap();
   }
   const place = s => encodeURIComponent(s+', La Reina, Santiago, Chile');
-  $('mapsLink').href = 'https://www.google.com/maps/dir/?api=1&origin='+place('Veintitrés de Febrero con Carlos Ossandón')+
-    '&destination='+place('Veintitrés de Febrero con Carlos Ossandón')+
+  $('mapsLink').href = 'https://www.google.com/maps/dir/?api=1&origin='+place('Valenzuela Puelma 8201')+
+    '&destination='+place('Valenzuela Puelma 8201')+
     '&waypoints='+[place('Carlos Silva Vildósola con Carlos Ossandón'),place('Príncipe de Gales con Carlos Ossandón'),place('Av. Echeñique con Carlos Ossandón'),place('Carlos Silva Vildósola')].join('%7C')+'&travelmode=walking';
   const total = STOPS.reduce((a,s)=>a+s.m,0);
   $('routeSum').textContent = '3 calles con dulces · 1 plaza · 1 cruce de avenida · '+total+' min en total';
